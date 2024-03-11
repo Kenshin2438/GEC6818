@@ -20,4 +20,4 @@ struct LCD {
 void LCD_constructor(struct LCD *self);
 void LCD_destructor(struct LCD *self);
 
-#endif /* lcdctl.h */
+#endif  // !LCDCTL_H_

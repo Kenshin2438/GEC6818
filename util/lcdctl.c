@@ -10,7 +10,7 @@
 
 static void clear(struct LCD *self) {
   if (self == NULL || self->addr == NULL) {
-    perror("LCD is uninitialized");
+    fprintf(stderr, "LCD is uninitialized\n");
     exit(EXIT_FAILURE);
   }
 
@@ -19,13 +19,13 @@ static void clear(struct LCD *self) {
 
 static void draw(struct LCD *self, size_t r, size_t c, uint32_t color) {
   if (self == NULL || self->addr == NULL) {
-    perror("LCD is uninitialized");
+    fprintf(stderr, "LCD is uninitialized\n");
     exit(EXIT_FAILURE);
   }
 
   if (r >= SCREEN_H || c >= SCREEN_W) {
-    fprintf(stderr, "lcd draw idx = (%zu, %zu)\n", r, c);
-    exit(EXIT_FAILURE);
+    fprintf(stderr, "Warning: LCD draw with index = (%zu, %zu)\n", r, c);
+    return;
   }
 
   self->addr[r * SCREEN_W + c] = color;
@@ -33,7 +33,7 @@ static void draw(struct LCD *self, size_t r, size_t c, uint32_t color) {
 
 void LCD_constructor(struct LCD *self) {
   if (self == NULL) {
-    perror("LCD_Init self is NULL");
+    fprintf(stderr, "LCD construct on NULL\n");
     exit(EXIT_FAILURE);
   }
 
@@ -54,9 +54,14 @@ void LCD_constructor(struct LCD *self) {
 }
 
 void LCD_destructor(struct LCD *self) {
-  if (self != NULL) {
-    close(self->fd);
-    munmap(self->addr, SCREEN_BYTES);
-    self = NULL;
+  if (self == NULL || self->fd == -1 || self->addr == NULL) {
+    fprintf(stderr, "LCD double free\n");
+    exit(EXIT_FAILURE);
   }
+
+  close(self->fd);
+  munmap(self->addr, SCREEN_BYTES);
+
+  self->fd = -1;
+  self->addr = NULL;
 }
