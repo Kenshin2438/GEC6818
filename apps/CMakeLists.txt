@@ -7,3 +7,4 @@ endmacro(add_app)
 
 add_app(show_bmp)
 add_app(csust)
+add_app(album)
