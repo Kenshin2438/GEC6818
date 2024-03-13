@@ -14,7 +14,7 @@ static enum MOVE get_move(struct TouchInfo *self) {
   }
 
   struct input_event ev;
-  int s_x, s_y, start = 1;
+  int s_x, s_y;  // start point coordinate
   while (1) {
     int status = read(self->fd, &ev, sizeof(struct input_event));
     if (status == -1) {
@@ -22,34 +22,21 @@ static enum MOVE get_move(struct TouchInfo *self) {
       exit(EXIT_FAILURE);
     }
 
-    printf("Debug: input event: type = %u, code = %u, value = %zu, \n", ev.type, ev.code, ev.value);
-    if (ev.type == EV_ABS && ev.code == ABS_X) {
-      self->x = ev.value;
-    }
-    if (ev.type == EV_ABS && ev.code == ABS_Y) {
-      self->y = ev.value;
-    }
-    if (ev.type == EV_KEY && ev.code == BTN_TOUCH) {
-      if (ev.value == 0 && start == 0) {
-        // TODO: priority for operations
-        if (self->x >= s_x + 50) {
-          return RIGHT;
-        }
-        if (s_x >= self->x + 50) {
-          return LEFT;
-        }
-        if (self->y >= s_y + 50) {
-          return UP;
-        }
-        if (s_y >= self->y + 50) {
-          return DOWN;
-        }
-        return TAP;
-      }
-      if (ev.value == 1 && start == 1) {
-        start = 0;
+    if (ev.type == EV_ABS) {
+      if (ev.code == ABS_X) self->x = ev.value * 800 / 1024;
+      if (ev.code == ABS_Y) self->y = ev.value * 480 / 600;
+    } else if (ev.type == EV_KEY && ev.code == BTN_TOUCH) {
+      if (ev.value == 1) {
         s_x = self->x;
         s_y = self->y;
+      }
+      if (ev.value == 0) {
+        const int delta = 50;
+        if (self->x > s_x && self->x - s_x >= delta) return RIGHT;
+        if (s_x > self->x && s_x - self->x >= delta) return LEFT;
+        if (s_y > self->y && s_y - self->y >= delta) return UP;
+        if (self->y > s_y && self->y - s_y >= delta) return DOWN;
+        return TAP;
       }
     }
   }
