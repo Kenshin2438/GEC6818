@@ -50,7 +50,6 @@ void bmp_display(struct LCD *lcd, const char *file, size_t r_offset, size_t c_of
     c_offset = (SCREEN_W > abs(bmp_W) ? SCREEN_W - abs(bmp_W) : 0) / 2;
   }  // flag for centering images
 
-  lcd->clear(lcd);
   size_t idx = 0;
   for (int i = 0; i < abs(bmp_H); i++) {
     if (i + r_offset >= SCREEN_H) continue;
