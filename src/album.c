@@ -36,6 +36,7 @@ static void bmp_nth(struct LCD *lcd, size_t idx /** 0-indexed */) {
   pclose(fp);
 
   sscanf(buf, "%s", buf);
+  lcd->clear(lcd);
   bmp_display(lcd, buf, 0, 0, 1);
 }
 
