@@ -3,3 +3,8 @@
 *.swp
 
 /images
+
+/apps/*.c
+!/apps/main.c
+
+TODO.md

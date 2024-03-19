@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.28.3)
 project(GEC6818 LANGUAGES C)
 
 if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "CMake inside source")
+  message(FATAL_ERROR "CMake inside source, try `cmake --build build`")
 endif()
 
 set(CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Wpedantic -pthread")
@@ -22,4 +22,3 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file (GLOB_RECURSE ALL_SRC_FILES *.h *.c)
 add_custom_target (format "clang-format" -i ${ALL_SRC_FILES} COMMENT "Formatting source code...")
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

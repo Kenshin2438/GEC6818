@@ -5,4 +5,4 @@ macro(add_app exec_name)
 endmacro(add_app)
 
 add_app(main)
-add_app(tester)
+#add_app(tester)

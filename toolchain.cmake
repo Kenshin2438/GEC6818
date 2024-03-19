@@ -17,8 +17,8 @@ if(NOT CMAKE_FIND_ROOT_PATH_MODE_PACKAGE)
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 endif()
 
-set(CMAKE_C_FLAGS "-mfloat-abi=softfp -mfpu=neon ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-mfloat-abi=softfp -mfpu=neon ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "-march=armv7 -mfloat-abi=softfp -mfpu=neon ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "-march=armv7 -mfloat-abi=softfp -mfpu=neon ${CMAKE_CXX_FLAGS}")
 
 # cache flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "c flags")
