@@ -6,6 +6,7 @@
 
 #include "bmp.h"
 #include "fonts.h"
+#include "tcp_sender.h"
 #include "utility.h"
 
 struct Item {
@@ -66,7 +67,7 @@ static void init_order(void) {
   cate[WATER][3].price = 188;
 }
 
-static void page_flush(struct LCD* lcd) {  // clang-format off
+static void page_refresh(struct LCD* lcd) {  // clang-format off
   { // region part-A
     for (int i = 0; i < 480; i++) for (int j = 0; j < 150; j++) { lcd->draw(lcd, i, j, 0x1B813E); }
     for (int _ = 0, pos = 0; _ < 1024; _++) for (int b = 7; b >= 0; b--, pos++) if (ZH_XIANG[_] >> b & 1)
@@ -80,17 +81,25 @@ static void page_flush(struct LCD* lcd) {  // clang-format off
   } // endregion part-A
   { // region part-B
     for (int i = 0; i < 480; i++) for (int j = 150; j < 650; j++) { lcd->draw(lcd, i, j, 0xFFFFFF); }
-    bmp_display(lcd, cate[cur][0].path,       10, 150 + 10, 0);
-    number_display(lcd, cate[cur][0].number, 240 - 5, 400 - 5 - 16, 0x66BAB7);
+    bmp_display(lcd, cate[cur][0].path, SCREEN_H - 210 - 10, 150 + 10, 0);
+    string_display(lcd, "CNY    ", 7, 240 - 5 - 24, 400 - 5 - 16 * 13, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][0].number, 240 - 5, 400 - 5 - 16, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][0].price, 240 - 5, 400 - 5 - 16 * 6, 0x66BAB7, 0x000000);
 
-    bmp_display(lcd, cate[cur][1].path,       10, 400 + 10, 0);
-    number_display(lcd, cate[cur][1].number, 240 - 5, 650 - 5 - 16, 0x66BAB7);
+    bmp_display(lcd, cate[cur][1].path, SCREEN_H - 210 - 10, 400 + 10, 0);
+    string_display(lcd, "CNY    ", 7, 240 - 5 - 24, 650 - 5 - 16 * 13, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][1].number, 240 - 5, 650 - 5 - 16, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][1].price, 240 - 5, 650 - 5 - 16 * 6, 0x66BAB7, 0x000000);
 
-    bmp_display(lcd, cate[cur][2].path, 240 + 10, 150 + 10, 0);
-    number_display(lcd, cate[cur][2].number, 480 - 5, 400 - 5 - 16, 0x66BAB7);
+    bmp_display(lcd, cate[cur][2].path, SCREEN_H - 210 - (240 + 10), 150 + 10, 0);
+    string_display(lcd, "CNY    ", 7, 480 - 5 - 24, 400 - 5 - 16 * 13, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][2].number, 480 - 5, 400 - 5 - 16, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][2].price, 480 - 5, 400 - 5 - 16 * 6, 0x66BAB7, 0x000000);
 
-    bmp_display(lcd, cate[cur][3].path, 240 + 10, 400 + 10, 0);
-    number_display(lcd, cate[cur][3].number, 480 - 5, 650 - 5 - 16, 0x66BAB7);
+    bmp_display(lcd, cate[cur][3].path, SCREEN_H - 210 - (240 + 10), 400 + 10, 0);
+    string_display(lcd, "CNY    ", 7, 480 - 5 - 24, 650 - 5 - 16 * 13, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][3].number, 480 - 5, 650 - 5 - 16, 0x66BAB7, 0x000000);
+    number_display(lcd, cate[cur][3].price, 480 - 5, 650 - 5 - 16 * 6, 0x66BAB7, 0x000000);
 
     total = 0;
     for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) total += cate[i][j].number * cate[i][j].price;
@@ -103,8 +112,8 @@ static void page_flush(struct LCD* lcd) {  // clang-format off
     { lcd->draw(lcd, pos / 128 + 406, pos % 128 + 10 + 650, 0xFFFFFF); }
     for (int _ = 0, pos = 0; _ < 1024; _++) for (int b = 7; b >= 0; b--, pos++) if (  ZH_HEJI[_] >> b & 1)
     { lcd->draw(lcd, pos / 128 + 234, pos % 128 + 10 + 650, 0xFFFFFF); }
-    number_display(lcd, total, 480 - 10 - 64 - 10 - 32, 800 - 10, 0xFFFFFF);
-    font_display(lcd, '$', 480 - 10 - 64 - 10 - 32 - 24, 800 - 10 - 16 * 6, 0xFFFFFF);
+    string_display(lcd, "CNY    ", 7, 480 - 10 - 64 - 10 - 32 - 24, 800 - 10 - 16 * 8, 0xFFFFFF, 0x000000);
+    number_display(lcd, total, 480 - 10 - 64 - 10 - 32, 800 - 10, 0xFFFFFF, 0x000000);
   } // endregion part-C
 }  // clang-format on
 
@@ -144,12 +153,21 @@ static enum ORDER_STATUS check_status(struct TouchInfo* sTouch) {  // clang-form
 
 static void order_push_socket(void) {
   if (total == 0) return;
+  char data[256];
+  for (enum CategoryType i = XIANG; i <= WATER; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (cate[i][j].number > 0) {
+        sprintf(data, "%s 单价：%u 份数：%u\n", cate[i][j].name, cate[i][j].price, cate[i][j].number);
+        send_msg(data);
+      }
+    }
+  }
 }
 
 void order(struct LCD* lcd, struct TouchInfo* sTouch) {
   init_order();
   while (1) {
-    page_flush(lcd);
+    page_refresh(lcd);
     enum ORDER_STATUS opt;
     while ((opt = check_status(sTouch)) != ORDER_NONE) {
       if (opt == ORDER_BREAK) return;
