@@ -1,6 +1,6 @@
-#include <stdint.h>
 #include <stdlib.h>
 
+#include "bmp.h"
 #include "game2048.h"
 #include "lcdctl.h"
 #include "screen_touch.h"
@@ -14,28 +14,16 @@ static enum App choose(struct TouchInfo *sTouch) {
   enum MOVE type;
   while ((type = sTouch->get_move(sTouch)) != TAP) continue;
 
-  // const size_t padding = 0;
-  if (sTouch->x >= 000 && sTouch->x < 200) return ALBUM;
-  if (sTouch->x >= 200 && sTouch->x < 400) return ORDER;
-  if (sTouch->x >= 400 && sTouch->x < 600) return GAME2048;
+  const int width = SCREEN_W / 3;
+  if (sTouch->x >= width * 0 && sTouch->x < width * 1) return ALBUM;
+  if (sTouch->x >= width * 1 && sTouch->x < width * 2) return ORDER;
+  if (sTouch->x >= width * 2 && sTouch->x < width * 3) return GAME2048;
   // if (sTouch->x >= 600 && sTouch->x < 800) return EXIT;
 
   return INVAILD;
 }
 
-void homepage(struct LCD *lcd) {
-  static const uint32_t color[] = {
-    0x00FEDFE1,
-    0x00A5DEE4,
-    0x008A6BBE,
-    0x00A8497A,
-  };
-  for (int i = 0; i < SCREEN_H; i++) {
-    for (int j = 0; j < SCREEN_W; j++) {
-      lcd->draw(lcd, i, j, color[j / 200]);
-    }
-  }
-}
+void homepage(struct LCD *lcd) { bmp_display(lcd, "home.bmp", 0, 0, 1); }
 
 int main(void) {
   struct LCD lcd;
