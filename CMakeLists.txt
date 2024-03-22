@@ -5,7 +5,7 @@ if(${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "CMake inside source, try `cmake --build build`")
 endif()
 
-set(CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Wpedantic -pthread")
+set(CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Wpedantic -pthread -Os")
 
 include(toolchain.cmake)
 

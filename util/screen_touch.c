@@ -14,7 +14,7 @@ static enum MOVE get_move(struct TouchInfo *self) {
   }
 
   struct input_event ev;
-  int s_x, s_y;  // start point coordinate
+  int s_x = 0, s_y = 0;  // start point coordinate
   while (1) {
     int status = read(self->fd, &ev, sizeof(struct input_event));
     if (status == -1) {
